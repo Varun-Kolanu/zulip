@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const { zrequire } = require("./lib/namespace.cjs");
+const { run_test } = require("./lib/test.cjs");
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
@@ -17,19 +17,19 @@ const stream_list_sort = zrequire("stream_list_sort");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("pygments_data");
-const {set_current_user, set_realm} = zrequire("state_data");
+const { set_current_user, set_realm } = zrequire("state_data");
 const util = zrequire("util");
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
 const user_groups = zrequire("user_groups");
-const {initialize_user_settings} = zrequire("user_settings");
+const { initialize_user_settings } = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
 const realm = {};
 set_realm(realm);
 const user_settings = {};
-initialize_user_settings({user_settings});
+initialize_user_settings({ user_settings });
 
 let next_id = 0;
 
@@ -41,15 +41,15 @@ function assertSameEmails(lst1, lst2) {
 }
 
 function user_item(user) {
-    return {type: "user", user};
+    return { type: "user", user };
 }
 
 function broadcast_item(user) {
-    return {type: "broadcast", user};
+    return { type: "broadcast", user };
 }
 
 function user_group_item(user_group) {
-    return {type: "user_group", ...user_group};
+    return { type: "user_group", ...user_group };
 }
 
 const a_bot = {
@@ -196,7 +196,7 @@ function test(label, f) {
     });
 }
 
-test("sort_streams", ({override, override_rewire}) => {
+test("sort_streams", ({ override, override_rewire }) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -383,14 +383,14 @@ function language_items(languages) {
     }));
 }
 
-test("sort_languages", ({override_rewire}) => {
+test("sort_languages", ({ override_rewire }) => {
     override_rewire(pygments_data, "langs", {
-        python: {priority: 26},
-        javascript: {priority: 27},
-        php: {priority: 16},
-        pascal: {priority: 15},
-        perl: {priority: 3},
-        css: {priority: 21},
+        python: { priority: 26 },
+        javascript: { priority: 27 },
+        php: { priority: 16 },
+        pascal: { priority: 15 },
+        perl: { priority: 3 },
+        css: { priority: 21 },
     });
 
     let test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
@@ -400,7 +400,7 @@ test("sort_languages", ({override_rewire}) => {
     assert.deepEqual(test_langs, language_items(["python", "php", "pascal", "perl", "javascript"]));
 
     // Test if popularity between two languages are the same
-    pygments_data.langs.php = {priority: 26};
+    pygments_data.langs.php = { priority: 26 };
     test_langs = language_items(["pascal", "perl", "php", "python", "javascript"]);
     test_langs = th.sort_languages(test_langs, "p");
 
@@ -482,7 +482,7 @@ test("sort_user_groups", () => {
 });
 
 function get_typeahead_result(query, current_stream_id, current_topic) {
-    const users = people.get_realm_users().map((user) => ({type: "user", user}));
+    const users = people.get_realm_users().map((user) => ({ type: "user", user }));
     const result = th.sort_recipients({
         users,
         query,
@@ -899,10 +899,10 @@ test("highlight_with_escaping", () => {
     assert.equal(result, expected);
 });
 
-test("render_person when emails hidden", ({mock_template, override}) => {
+test("render_person when emails hidden", ({ mock_template, override }) => {
     // Test render_person with regular person, under hidden email visibility case
     override(realm, "custom_profile_field_types", {
-        PRONOUNS: {id: 8, name: "Pronouns"},
+        PRONOUNS: { id: 8, name: "Pronouns" },
     });
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
@@ -915,11 +915,11 @@ test("render_person when emails hidden", ({mock_template, override}) => {
     assert.ok(rendered);
 });
 
-test("render_person", ({mock_template, override}) => {
+test("render_person", ({ mock_template, override }) => {
     // Test render_person with regular person
     a_user.delivery_email = "a_user_delivery@zulip.org";
     override(realm, "custom_profile_field_types", {
-        PRONOUNS: {id: 8, name: "Pronouns"},
+        PRONOUNS: { id: 8, name: "Pronouns" },
     });
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
@@ -932,7 +932,7 @@ test("render_person", ({mock_template, override}) => {
     assert.ok(rendered);
 });
 
-test("render_person special_item_text", ({mock_template}) => {
+test("render_person special_item_text", ({ mock_template }) => {
     let rendered = false;
 
     // Test render_person with special_item_text person
@@ -955,7 +955,7 @@ test("render_person special_item_text", ({mock_template}) => {
     assert.ok(rendered);
 });
 
-test("render_stream", ({mock_template}) => {
+test("render_stream", ({ mock_template }) => {
     // Test render_stream with short description
     let rendered = false;
     const stream = {
@@ -975,7 +975,7 @@ test("render_stream", ({mock_template}) => {
     assert.ok(rendered);
 });
 
-test("render_stream_topic", ({mock_template}) => {
+test("render_stream_topic", ({ mock_template }) => {
     let rendered = false;
     const streamData = {
         invite_only: true,
@@ -1015,7 +1015,7 @@ test("render_stream_topic", ({mock_template}) => {
     assert.ok(rendered);
 });
 
-test("render_emoji", ({mock_template}) => {
+test("render_emoji", ({ mock_template }) => {
     // Test render_emoji with normal emoji.
     let expected_template_data = {
         primary: "thumbs up",
@@ -1066,20 +1066,20 @@ test("render_emoji", ({mock_template}) => {
 
 test("sort_slash_commands", () => {
     const slash_commands = [
-        {name: "my"},
-        {name: "poll"},
-        {name: "me"},
-        {name: "mine"},
-        {name: "test"},
-        {name: "ping"},
+        { name: "my" },
+        { name: "poll" },
+        { name: "me" },
+        { name: "mine" },
+        { name: "test" },
+        { name: "ping" },
     ];
     assert.deepEqual(th.sort_slash_commands(slash_commands, "m"), [
-        {name: "me"},
-        {name: "mine"},
-        {name: "my"},
-        {name: "ping"},
-        {name: "poll"},
-        {name: "test"},
+        { name: "me" },
+        { name: "mine" },
+        { name: "my" },
+        { name: "ping" },
+        { name: "poll" },
+        { name: "test" },
     ]);
 });
 
@@ -1104,13 +1104,13 @@ test("compare_language", () => {
 
 // TODO: This is incomplete for testing this function, and
 // should be filled out more. This case was added for codecov.
-test("compare_by_pms", () => {
-    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+test("compare_users_by_interaction", () => {
+    assert.equal(th.compare_users_by_interaction(a_user, a_user), 0);
 });
 
-test("sort_group_setting_options", ({override_rewire}) => {
+test("sort_group_setting_options", ({ override_rewire }) => {
     function get_group_setting_typeahead_result(query, target_group) {
-        const users = people.get_realm_active_human_users().map((user) => ({type: "user", user}));
+        const users = people.get_realm_active_human_users().map((user) => ({ type: "user", user }));
         const groups = user_groups.get_all_realm_user_groups().map((group) => ({
             type: "user_group",
             ...group,
