@@ -64,6 +64,7 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 import * as util from "./util.ts";
+import { get_allowed_bot_types } from "./settings_bots.ts";
 
 export type CustomProfileFieldData = {
     id: number;
@@ -806,42 +807,56 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
-    const html_body = render_edit_bot_form({
-        user_id,
-        is_active,
-        email: bot.email,
-        full_name: bot.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
-        bot_avatar_url: bot.avatar_url,
-        is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
-    });
-    $container.append($(html_body));
+    let bot_type = bot.bot_type;
     let avatar_widget: UploadWidget;
-
-    assert(bot.bot_type !== undefined && bot.bot_type !== null);
-
-    const bot_type = bot.bot_type.toString();
     const services = bot_data.get_services(bot.user_id);
     let service:
         | {
-              config_data: Record<string, string>;
-              service_name: string;
-          }
+            config_data: Record<string, string>;
+            service_name: string;
+        }
         | {
-              base_url: string;
-              interface: number;
-              token: string;
-          };
+            base_url: string;
+            interface: number;
+            token: string;
+        };
     if (services?.[0] !== undefined) {
         service = services[0];
     }
-    edit_bot_post_render();
-    original_values = get_current_values($("#bot-edit-form"));
-    $("#bot-edit-form").on("input", "input, select, button", (e) => {
-        e.preventDefault();
-        toggle_submit_button($("#bot-edit-form"));
-    });
+
+    render_bot_edit_form_based_on_bot_type();
+    function render_bot_edit_form_based_on_bot_type(): void {
+        const html_body = render_edit_bot_form({
+            user_id,
+            is_active,
+            email: bot.email,
+            full_name: bot.full_name,
+            bot_types: get_allowed_bot_types(),
+            bot_type: bot_type,
+            user_role_values: settings_config.user_role_values,
+            disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
+            bot_avatar_url: bot.avatar_url,
+            is_incoming_webhook_bot: bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+        });
+        $("#bot-edit-form").remove();
+        $container.append($(html_body));
+
+        assert(bot_type !== undefined && bot_type !== null);
+        $("#edit_bot_type").val(bot_type);
+        bot_type = bot_type.toString();
+
+        edit_bot_post_render();
+        original_values = get_current_values($("#bot-edit-form"));
+        $("#bot-edit-form").on("input", "input, select, button", (e) => {
+            e.preventDefault();
+            toggle_submit_button($("#bot-edit-form"));
+        });
+
+        $("#edit_bot_type").on("change", () => {
+            bot_type = $("#edit_bot_type").val();
+            render_bot_edit_form_based_on_bot_type();
+        })
+    }
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#bot-role-select").val()!.trim(),
